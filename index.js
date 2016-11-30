@@ -9,7 +9,10 @@ var record = [];
 
 var channels = {};
 
-record = require("./record.json");
+if(fs.exists("./record.json")){
+    record = require("./record.json");
+}
+
 
 
 function pushNSave(theString){
