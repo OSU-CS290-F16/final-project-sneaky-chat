@@ -5,22 +5,112 @@
     <link rel="stylesheet" href = "style.css">
   </head>
   <body>
-    <ul id="messages"></ul>
-    <form>
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
+    <div id="bodyDiv">
+        <div id="headerDiv">
+        <h1>Sneaky Chat</h1><br>
+                The
+                <select class="adjective"></select>
+                <select class="noun"></select>
+                <select class="verb"></select>
+                the
+                <select class="adjective"></select>
+                <select class="noun"></select>
+                .
+                <button onclick="login()">Login</button>
+        </div>
+        <ul id="messages"></ul>
+        <form>
+          <input id="m" autocomplete="off" /><button>Send</button>
+        </form>
+    </div>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
-      var socket = io();
-      $('form').submit(function(){
+
+    var caughtUp = false;
+    var wordList;
+    $.getJSON('wordList.json', function(data) {
+        wordList=data;
+        var theNouns = document.getElementsByClassName('noun');
+        var theVerbs = document.getElementsByClassName('verb');
+        var theAdjectives = document.getElementsByClassName('adjective');
+        var pos = 0;
+        var lim = theNouns.length;
+        var selectPos;
+        var theElement;
+        while(pos<lim){
+            selectPos=0;
+            while(selectPos<26){
+                theElement = document.createElement("option");
+                theElement.value = wordList.nouns[selectPos][0];
+                theElement.innerHTML = wordList.nouns[selectPos];
+                theNouns[pos].appendChild(theElement);
+                theElement = document.createElement("option");
+                theElement.value = wordList.nouns[selectPos][0].toUpperCase();
+                theElement.innerHTML = wordList.nouns[selectPos]+"s";
+                theNouns[pos].appendChild(theElement);
+                selectPos++;
+            }
+            pos++;
+        }
+        pos = 0;
+        lim = theVerbs.length;
+        while(pos<lim){
+            selectPos=0;
+            while(selectPos<26){
+                theElement = document.createElement("option");
+                theElement.value = wordList.verbs[selectPos][0];
+                theElement.innerHTML = wordList.verbs[selectPos];
+                theVerbs[pos].appendChild(theElement);
+                selectPos++;
+            }
+            pos++;
+        }
+        pos = 0;
+        lim = theAdjectives.length;
+        while(pos<lim){
+            selectPos=0;
+            while(selectPos<26){
+                theElement = document.createElement("option");
+                theElement.value = wordList.adjectives[selectPos][0];
+                theElement.innerHTML = wordList.adjectives[selectPos];
+                theAdjectives[pos].appendChild(theElement);
+                selectPos++;
+            }
+            pos++;
+        }
+    });
+
+    var socket = io();
+        $('form').submit(function(){
         socket.emit('chat message', $('#m').val());
         $('#m').val('');
         return false;
-      });
-      socket.on('chat message', function(msg){
+    });
+    socket.on('chat message', function(msg){
         $('#messages').append($('<li>').text(msg));
-      });
+    });
+    socket.on('catchup', function(msg){
+        if(!caughtUp){
+            $('#messages').append($('<li>').text(msg));
+        }
+    });
+    socket.on('done', function(msg){
+        caughtUp=true;
+    });
+
+    function login(){
+        var selectElements = document.getElementsByTagName("SELECT");
+        var loginID = "";
+        var pos = 0;
+        var lim = selectElements.length;
+        while(pos<lim){
+            loginID = loginID + selectElements[pos].value;
+            pos++;
+        }
+        socket.emit('login', loginID);
+    }
+
     </script>
   </body>
 </html>
