@@ -88,10 +88,3 @@ form button {
 #messages li:nth-child(odd) {
 	background: lightgrey;
 }
-
-h1 img{
-	font-size: 0px;
-	width: 200px;
-	margin: 0px;
-	padding: 0px;
-}
