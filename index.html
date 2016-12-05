@@ -7,7 +7,7 @@
   <body>
     <div id="bodyDiv">
         <div id="headerDiv">
-        <h1>Sneaky Chat</h1><br>
+        <h1><img src = "./logo.png"></h1><br>
                 The
                 <select class="adjective"></select>
                 <select class="noun"></select>
@@ -83,8 +83,10 @@
 
     var socket = io();
         $('form').submit(function(){
-        socket.emit('chat message', $('#m').val());
-        $('#m').val('');
+		if($('#m').val() != ''){
+			socket.emit('chat message', $('#m').val());
+			$('#m').val('');
+		}
         return false;
     });
     socket.on('chat message', function(msg){
