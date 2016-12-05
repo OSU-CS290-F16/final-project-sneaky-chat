@@ -8,6 +8,8 @@ body {
 	font: 13px Helvetica, Arial;
 }
 
+
+
 form {
 	background: #000;
 	padding: 3px;
@@ -80,8 +82,16 @@ form button {
 	background: white;
 	padding: 20px;
 	width: 400px;
+	word-wrap: break-word;
 }
 
 #messages li:nth-child(odd) {
 	background: lightgrey;
+}
+
+h1 img{
+	font-size: 0px;
+	width: 200px;
+	margin: 0px;
+	padding: 0px;
 }
