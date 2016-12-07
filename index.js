@@ -9,24 +9,34 @@ var fs = require('fs');
 var Users = {};
 
 var Records = {};
-
 var Channels = {};
 
-if(fs.exists("./record.json")){
-    record = require("./record.json");
+if (fs.existsSync("record.json")){
+    Records = require("./record.json");
+    var recPos = 0;
+    var chans = Object.keys(Records);
+    var recLim = chans.length;
+    var linePos;
+    var lineLim;
+    while(recPos<recLim){
+        Channels[chans[recPos]] = { Manifest: [], Record: []};
+        linePos=0;
+        lineLim=Records[chans[recPos]].length;
+        while(linePos<lineLim){
+            Channels[chans[recPos]].Record.push(Records[chans[recPos]][linePos]);
+            linePos++;
+        }
+        recPos++;
+    }
+
 }
 
 
-
-function pushNSave(theString){
-  record.push(theString);
-  fs.writeFile("record.json",JSON.stringify(record),(function(error){"do nothing";}));
-}
 
 function getUniqueID(){
-  var theID = Math.random();
+  var theID = Math.floor(Math.random()*1000000000);
   while( typeof Users[theID] !== "undefined"){
-    theID = Math.random();
+    theID = Math.floor(Math.random()*1000000000);
   }
   return theID;
 }
@@ -41,7 +51,6 @@ function broadcast(chan, message){
   Records[chan].push(message);
   Channels[chan].Record.push(message);
   fs.writeFile("record.json",JSON.stringify(Records),(function(error){"do nothing";}));
-  console.log("done");
 }
 
 app.get('/', function(req, res){
@@ -58,10 +67,10 @@ app.get('/wordList.json', function(req, res){
 
 io.on('connection', function(socket){
 
-  console.log('a user connected');
   var theID = getUniqueID();
   Users[theID] = {Socket: socket, Chan: null };
   socket.emit('ID',theID);
+  console.log('A user connected. Assigning ID '+ theID);
 
   socket.on('channel', function(data){
 
@@ -75,13 +84,12 @@ io.on('connection', function(socket){
 
     // If user already tuned into a channel, removes them from that channel
     if( typeof Channels[Users[data.ID].Chan] !== "undefined" ){
-      console.log( data.ID + " dropped from channel " + data.Chan );
       var theChan = Channels[Users[data.ID].Chan];
       var pos = 0;
       var lim = theChan.Manifest.length;
       while(pos<lim){
         if(theChan.Manifest[pos] === data.ID){
-          theChan.Manifest = theChan.Manifest.splice(pos,1);
+          theChan.Manifest.splice(pos,1);
         }
         pos++;
       }
@@ -103,15 +111,14 @@ io.on('connection', function(socket){
 
     // Set the user's channel attribute to the one in the message
     Users[data.ID].Chan = data.Chan;
-    console.log(data.ID+" connected to "+data.Chan);
 
   });
 
   socket.on('disconnect', function(){
 
     var pos = 0;
-    var lim = Users.length;
     var UserKeys = Object.keys(Users);
+    var lim = UserKeys.length;
     while(pos<lim){
         if(Users[UserKeys[pos]].Socket === this){
             break;
@@ -131,8 +138,8 @@ io.on('connection', function(socket){
       var pos = 0;
       var lim = theChan.Manifest.length;
       while(pos<lim){
-        if(theChan.Manifest[pos] === data.ID){
-          theChan.Manifest = theChan.Manifest.splice(pos,1);
+        if(theChan.Manifest[pos] == data.ID){
+          theChan.Manifest.splice(pos,1);
         }
         pos++;
       }
@@ -145,7 +152,6 @@ io.on('connection', function(socket){
 
 
   socket.on('chat message', function(data){
-    console.log(data);
     // If the transmission is lying to us, don't do anything
     if( typeof Users[data.ID] === "undefined" ){
         return;
@@ -159,8 +165,6 @@ io.on('connection', function(socket){
         console.log(data.ID+ " called into the void");
         return;
     }
-
-    console.log(data.ID+ " said "+data.Message);
     data.Message = data.ID + " > " + data.Message;
     broadcast(Users[data.ID].Chan,data.Message);
 

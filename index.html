@@ -118,6 +118,7 @@
             theChan = theChan + selectElements[pos].value;
             pos++;
         }
+        $('#messages').empty();
         socket.emit('channel', {ID: ID, Chan: theChan});
     }
 
