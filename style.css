@@ -6,6 +6,7 @@
 
 body {
 	font: 13px Helvetica, Arial;
+	background: #000000;
 }
 
 
@@ -41,7 +42,6 @@ form button {
     height: 100%;
     bottom: 0px;
     top: 0px;
-    position: absolute;
 }
 
 #headerDiv {
@@ -87,4 +87,11 @@ form button {
 
 #messages li:nth-child(odd) {
 	background: lightgrey;
+}
+
+#buffer {
+    height: 50px;
+    position: relative;
+    bottom: 0px;
+    z-index: -100;
 }

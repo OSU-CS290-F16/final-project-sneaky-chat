@@ -23,11 +23,13 @@
           <input id="m" autocomplete="off" /><button>Send</button>
         </form>
     </div>
+    <div id="buffer" >
+    </div>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
 
-    var caughtUp = false;
+    var ID = null;
     var wordList;
     $.getJSON('wordList.json', function(data) {
         wordList=data;
@@ -82,36 +84,43 @@
     });
 
     var socket = io();
-        $('form').submit(function(){
-		if($('#m').val() != ''){
-			socket.emit('chat message', $('#m').val());
-			$('#m').val('');
-		}
+
+    $('form').submit(function(){
+        socket.emit('chat message', {ID: ID, Message: $('#m').val()});
+        $('#m').val('');
         return false;
     });
-    socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
+
+    socket.on('ID', function(theID){
+        ID = theID;
     });
-    socket.on('catchup', function(msg){
-        if(!caughtUp){
-            $('#messages').append($('<li>').text(msg));
+
+    socket.on('broadcast', function(theMessage){
+        $('#messages').append($('<li>').text(theMessage));
+    });
+
+    socket.on('catchup', function(theRecord){
+        $('#messages').empty();
+        var pos = 0;
+        var lim = theRecord.length;
+        while(pos<lim){
+            $('#messages').append($('<li>').text(theRecord[pos]));
+            pos++;
         }
-    });
-    socket.on('done', function(msg){
-        caughtUp=true;
     });
 
     function login(){
         var selectElements = document.getElementsByTagName("SELECT");
-        var loginID = "";
+        var theChan = "";
         var pos = 0;
         var lim = selectElements.length;
         while(pos<lim){
-            loginID = loginID + selectElements[pos].value;
+            theChan = theChan + selectElements[pos].value;
             pos++;
         }
-        socket.emit('login', loginID);
+        socket.emit('channel', {ID: ID, Chan: theChan});
     }
+
 
     </script>
   </body>
