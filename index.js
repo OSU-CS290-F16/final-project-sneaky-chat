@@ -65,6 +65,10 @@ app.get('/wordList.json', function(req, res){
   res.sendFile(__dirname + '/wordList.json');
 });
 
+app.get('/logo.png', function(req, res){
+  res.sendFile(__dirname + '/logo.png');
+});
+
 io.on('connection', function(socket){
 
   var theID = getUniqueID();
